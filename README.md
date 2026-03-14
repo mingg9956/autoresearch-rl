@@ -59,6 +59,24 @@ Hi have a look at program.md and let's kick off a new experiment! let's do the s
 - **Multiple environments.** GSM8K by default. Composite metric prevents overfitting to one task.
 - **Built on prime-rl.** Production-ready async RL framework with GRPO/IPO/DPPO support.
 
+## Best configuration found
+
+After 66 experiments, the agent converged on this config (`train.toml`) — going from a baseline of **0.475** to **0.550** eval_score on GSM8K (pass@1):
+
+| Parameter | Value | Why it matters |
+|-----------|-------|----------------|
+| `lr` | `3e-6` | Lower than the initial 5e-6 — prevents overfitting over 20 steps |
+| `batch_size` | `256` | Smaller batches = more gradient updates in the same time budget |
+| `rollouts_per_example` | `4` | Fewer rollouts per example, but more steps overall |
+| `max_steps` | `20` | Sweet spot — 14 was too few, 24 overfits |
+| `token_mask_high` | `5.0` | Clips extreme importance ratios at the token level |
+| `length_weighted_mean` | `true` | Normalizes loss by response length, helps with variable-length outputs |
+| `scheduler` | `constant` | No warmup, no decay — just constant LR for 20 steps |
+| `optimizer` | `adamw` | Default, but confirmed better than SGD and Muon |
+| `temperature` | `1.0` | Default sampling temp — 0.7 and 1.2 both hurt |
+
+Key things that didn't work: LoRA (rank 16), cosine/linear schedules, higher LR (5e-6+), rollouts=8 (no gain over 4), difficulty filtering, repetition penalty, and torch.compile.
+
 ## License
 
 MIT
