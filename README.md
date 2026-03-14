@@ -2,11 +2,13 @@
 
 Autonomous RL post-training research. Give an AI agent a real RL training setup and let it experiment autonomously overnight. It modifies the config, trains for 10 minutes, checks if the result improved, keeps or discards, and repeats.
 
+RL post-training is hard. Training is unstable, reward hacking is real, and small hyperparameter changes can completely tank a run. It's the kind of problem where you end up babysitting experiments for hours, tweaking one knob at a time. When I saw Andrej Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) for pretraining, the first thing I thought was: this is exactly what RL post-training needs.
+
 The idea is simple: instead of a human sitting around tweaking hyperparameters, let an AI agent do it. The agent reads the current config, proposes a change (learning rate, batch size, loss masking, regularization, etc.), runs a full training loop, evaluates, and decides whether to keep or discard the result. Over dozens of experiments it systematically explores the search space and converges on a strong configuration — all without human intervention.
 
-Inspired by [autoresearch](https://github.com/karpathy/autoresearch) (pretraining), this applies the same philosophy to **RL post-training** using [prime-rl](https://github.com/PrimeIntellect-ai/prime-rl) — my favourite RL post-training framework — and [verifiers](https://github.com/PrimeIntellect-ai/verifiers).
+This applies the autoresearch philosophy to **RL post-training** using [prime-rl](https://github.com/PrimeIntellect-ai/prime-rl) — my favourite RL post-training framework — and [verifiers](https://github.com/PrimeIntellect-ai/verifiers).
 
-Shoutout to [@willccbb](https://x.com/willccbb) for creating verifiers and making RL reward verification actually usable.
+Shoutout to [@willccbb](https://x.com/willccbb) for creating verifiers.
 
 ## Progress
 
